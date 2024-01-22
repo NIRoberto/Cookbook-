@@ -41,7 +41,7 @@ const HeroScreen = ({ navigation }) => {
         />
         <AppButton
           title="Get started"
-          onPress={() => {
+          handlePress={() => {
             console.log("Login");
             navigation.navigate("Login");
           }}

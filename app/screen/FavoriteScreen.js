@@ -1,4 +1,5 @@
 import {
+  Alert,
   FlatList,
   Image,
   StyleSheet,
@@ -6,14 +7,17 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Screen from "../components/Screen";
 import AppText from "../components/typo/AppText";
 import colors from "../config/color";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import { MaterialCommunityIcons as Mat } from "@expo/vector-icons";
-import { Swipeable } from "react-native-gesture-handler";
-// Recipe data with id
+import AppContext from "../config/context";
+import axios from "../config/axios";
+import * as Notifications from "expo-notifications";
+import { getData } from "../config/storage";
+
 export const recipes = [
   {
     id: "1",
@@ -47,6 +51,16 @@ export const recipes = [
   // ...
 ];
 
+Notifications.setNotificationHandler({
+  handleNotification: async () => {
+    return {
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+    };
+  },
+});
+
 // Generate additional recipes to make at least 9
 for (let i = 3; i <= 9; i++) {
   recipes.push({
@@ -65,7 +79,7 @@ for (let i = 3; i <= 9; i++) {
   });
 }
 
-const RecipeItem = ({ item }) => {
+const RecipeItem = ({ item, handleBook }) => {
   return (
     <View
       style={{
@@ -111,7 +125,7 @@ const RecipeItem = ({ item }) => {
       </View>
       <TouchableOpacity
         onPress={() => {
-          console.log("Booked", item);
+          handleBook(item);
         }}
         style={{
           backgroundColor: colors["fire-engine-red"],
@@ -129,8 +143,57 @@ const RecipeItem = ({ item }) => {
 };
 
 const RecipeScreen = () => {
-  const handleBook = (item) => {
-    console.log("Booked", item);
+  const { recipes, user, setUser } = useContext(AppContext);
+
+  const [expoPushToken, setExpoPushToken] = useState("");
+  const requestPermissions = async () => {
+    try {
+      const { granted } = await Notifications.requestPermissionsAsync();
+      if (!granted) {
+        alert("You need to enable permissions in settings");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const getToken = async () => {
+    try {
+      const token = await Notifications.getExpoPushTokenAsync({
+        projectId: "dfa4cc7b-cd15-413b-bde8-6b4834773852",
+      });
+      setExpoPushToken(token.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    requestPermissions();
+    getToken();
+  }, []);
+  const handleBook = async (item) => {
+    try {
+      const response = await axios.post(`book/${user._id}`, {
+        recipeId: item._id,
+        scheduledTime: Date.now(),
+        notes: "Family dinner",
+      });
+
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: "You have a new booking",
+          body: "You have a new booking",
+        },
+        trigger: {
+          seconds: 1,
+        },
+      });
+      setUser(await getData("user"));
+      console.log(response.data);
+    } catch (error) {
+      alert(error.response.data.error);
+    }
   };
   return (
     <View>
@@ -140,99 +203,58 @@ const RecipeScreen = () => {
         keyExtractor={(recipe) => recipe.id}
         numColumns={2}
         renderItem={({ item }) => (
-          <RecipeItem onPress={handleBook} item={item} />
+          <RecipeItem handleBook={handleBook} item={item} />
         )}
       />
     </View>
   );
 };
 
-const bookingData = [
-  {
-    id: "1",
-    recipe: {
-      id: "1",
-      title: "Homemade Pizza",
-      category: "Dinner",
-      ingredients: [
-        "Dough",
-        "Tomato Sauce",
-        "Cheese",
-        "Toppings of your choice",
-      ],
-      instructions:
-        "1. Roll out the dough. 2. Spread tomato sauce. 3. Add cheese and toppings. 4. Bake in the oven.",
-      image: "https://example.com/pizza.jpg",
-      duration: 45,
-      difficulty: "Intermediate",
-    },
-    scheduledTime: "2024-03-01T18:00:00", // Replace with a valid date/time format
-    notes: "Family dinner",
-  },
-  // Add more booking items as needed
-  {
-    id: "2",
-    recipe: {
-      id: "2",
-      title: "Avocado Toast",
-      category: "Breakfast",
-      ingredients: [
-        "2 slices of bread",
-        "1 ripe avocado",
-        "Salt",
-        "Pepper",
-        "Optional: poached egg",
-      ],
-      instructions:
-        "Toast bread. Mash avocado and spread it on the toast. Add salt and pepper. Optional: top with a poached egg.",
-      image: "https://example.com/avocado_toast.jpg",
-      duration: 15,
-      difficulty: "Easy",
-    },
-    scheduledTime: "2024-03-02T08:00:00",
-    notes: "Healthy breakfast",
-  },
-
-  {
-    id: "3",
-    recipe: {
-      id: "3",
-      title: "Avocado Toast",
-      category: "Breakfast",
-      ingredients: [
-        "2 slices of bread",
-        "1 ripe avocado",
-        "Salt",
-        "Pepper",
-        "Optional: poached egg",
-      ],
-      instructions:
-        "Toast bread. Mash avocado and spread it on the toast. Add salt and pepper. Optional: top with a poached egg.",
-      image: "https://example.com/avocado_toast.jpg",
-      duration: 15,
-      difficulty: "Easy",
-    },
-    scheduledTime: "2024-03-02T08:00:00",
-    notes: "Healthy breakfast",
-  },
-  // Add more booking items as needed
-  // ...
-];
-
 const BookingItem = ({ item }) => {
+  const handleDelete = async (selected) => {
+    Alert.alert(
+      "Confirm Delete",
+      " Are you sure you want to delete this booking?",
+      [
+        {
+          text: "Not",
+          style: "no",
+        },
+        {
+          text: "Yes",
+          onPress: async () => {
+            try {
+              const response = await axios.delete(`book/${selected._id}`);
+              console.log(response.data);
+
+              await Notifications.scheduleNotificationAsync({
+                content: {
+                  title: "Booking deleted",
+                  body: "Booking deleted",
+                },
+              });
+            } catch (error) {
+              console.log(error.response.data);
+            }
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <View style={{ flex: 1, marginVertical: 10, flexDirection: "row" }}>
       <View style={{ flex: 1 }}>
         <Image
           source={{
-            uri: "https://www.eatingwell.com/thmb/m5xUzIOmhWSoXZnY-oZcO9SdArQ=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/article_291139_the-top-10-healthiest-foods-for-kids_-02-4b745e57928c4786a61b47d8ba920058.jpg",
+            uri: "https://images.immediate.co.uk/production/volatile/sites/30/2023/06/Ultraprocessed-food-58d54c3.jpg?quality=90&resize=440,400",
           }}
           style={{ width: "100%", height: 100, borderRadius: 10 }}
         />
       </View>
       <View style={{ flex: 1, padding: 10 }}>
-        <AppText value={item.recipe.title} size={10} color="black" />
-        <AppText value={item.recipe.category} size={10} color="gray" />
+        <AppText value={item?.recipeId?.title} size={10} color="black" />
+        <AppText value={item?.recipeId?.category} size={10} color="gray" />
         <View
           style={{
             // alignItems: "center",
@@ -244,14 +266,18 @@ const BookingItem = ({ item }) => {
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <Mat name="clock-outline" size={10} color="black" />
               <AppText
-                value={item.recipe.duration + " mins"}
+                value={item?.recipeId?.duration + " mins"}
                 size={10}
                 color="gray"
               />
             </View>
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <Mat name="fire" size={20} color="black" />
-              <AppText value={item.recipe.difficulty} size={10} color="gray" />
+              <AppText
+                value={item?.recipe?.difficulty}
+                size={10}
+                color="gray"
+              />
             </View>
           </View>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -284,7 +310,7 @@ const BookingItem = ({ item }) => {
 
         <TouchableOpacity
           onPress={() => {
-            console.log("Booked", item);
+            handleDelete(item);
           }}
         >
           <View
@@ -313,11 +339,11 @@ const BookingItem = ({ item }) => {
 
 const BookScreen = () => {
   const [refresh, setRefresh] = useState(false);
-
-  const [bookings, setBookings] = useState(bookingData);
+  const { bookings, setUser } = useContext(AppContext);
+  console.log(bookings);
 
   return (
-    <View style={{ padding: 10 }}>
+    <View style={{ padding: 10, flex: 1 }}>
       <AppText
         value={"Book"}
         color={colors["fire-engine-red"]}
@@ -326,11 +352,12 @@ const BookScreen = () => {
       />
 
       <FlatList
-        data={bookingData}
+        data={bookings}
         style={{ padding: 0 }}
         refreshing={refresh}
-        onRefresh={() => {
+        onRefresh={async () => {
           setRefresh(true);
+          setUser(await getData("user"));
           setTimeout(() => {
             setRefresh(false);
           }, 2000);

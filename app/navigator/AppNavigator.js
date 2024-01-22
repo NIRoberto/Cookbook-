@@ -6,6 +6,7 @@ import HomeScreen from "../screen/HomeScreen";
 import ProfileScreen from "../screen/ProfileScreen";
 import colors from "../config/color";
 import { TopNavigator } from "../screen/FavoriteScreen";
+import AddRecipeScreen from "../screen/AddRecipeScreen";
 
 const AppNavigator = () => {
   const Tab = createBottomTabNavigator();
@@ -20,6 +21,12 @@ const AppNavigator = () => {
       name: "Favorite",
       component: TopNavigator,
       icon: "heart",
+      headerShown: true,
+    },
+    {
+      name: "Add",
+      component: AddRecipeScreen,
+      icon: "plus",
       headerShown: true,
     },
     {

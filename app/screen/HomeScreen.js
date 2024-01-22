@@ -1,10 +1,11 @@
 import { FlatList, Image, StyleSheet, Text, View } from "react-native";
-import React from "react";
+import React, { useContext } from "react";
 import Screen from "../components/Screen";
 import { MaterialCommunityIcons as Mat } from "@expo/vector-icons";
 import AppText from "../components/typo/AppText";
 import colors from "../config/color";
 import { recipes } from "./FavoriteScreen";
+import AppContext from "../config/context";
 
 /*
   this is how recipe object looks like
@@ -85,7 +86,7 @@ const HomeScreen = () => {
     "Drinks",
   ];
   const [activeCategory, setActiveCategory] = React.useState("Breakfast");
-
+  const { recipes } = useContext(AppContext);
   return (
     <Screen>
       <View
@@ -147,7 +148,6 @@ const HomeScreen = () => {
           />
           <FlatList
             data={recipes}
-         
             keyExtractor={(recipe) => recipe.id}
             numColumns={3}
             renderItem={({ item }) => <RecipeItem item={item} />}

@@ -1,22 +1,26 @@
-import { View, Text } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React from "react";
-import colors from "../../config/color";
 import AppText from "../typo/AppText";
+import colors from "../../config/color";
 
-const AppButton = ({ title, ...others }) => {
+const AppButton = ({ title, bold, bgColor, handlePress }) => {
   return (
-    <View
-      style={{
-        width: "100%",
-        backgroundColor: colors["fire-engine-red"],
-        borderRadius: 20,
-        justifyContent: "center",
-        padding: 25,
-        alignItems: "center",
-      }}
-    >
-      <AppText value={title} size={15} {...others} color="white" bold={false} />
-    </View>
+    <TouchableOpacity onPress={handlePress}>
+      <View
+        style={{
+          backgroundColor: colors["fire-engine-red"],
+          borderRadius: 7,
+          justifyContent: "center",
+          alignItems: "center",
+          padding: 20,
+          width: "100%",
+          borderWidth: bold ? 1 : 0,
+          borderColor: "gray",
+        }}
+      >
+        <AppText value={title} bold={false} color={"white"} />
+      </View>
+    </TouchableOpacity>
   );
 };
 

@@ -6,8 +6,30 @@ import AppSubmitButton from "../components/forms/AppSubmitButton";
 import AppFormField from "../components/forms/AppFormField";
 import AppForm from "../components/forms/AppForm";
 import colors from "../config/color";
+import * as Yup from "yup";
+import axios from "../config/axios";
+import { getData, storeData } from "../config/storage";
+import { useContext } from "react";
 
+const validationSchema = Yup.object().shape({
+  email: Yup.string().required().email().label("Email"),
+  password: Yup.string().required().min(6).label("Password"),
+  names: Yup.string().required().label("Names"),
+});
 const RegisterScreen = ({ navigation }) => {
+  const { user, setUser  } = useContext();
+
+  const handleRegister = async (values) => {
+    console.log(values);
+    try {
+      const response = await axios.post("user/register", values);
+      console.log(response.data);
+      storeData("user", response.data.user);
+      setUser(await getData("user"));
+    } catch (error) {
+      console.log(error.response.data);
+    }
+  };
   return (
     <Screen>
       <View
@@ -45,12 +67,13 @@ const RegisterScreen = ({ navigation }) => {
           />
         </View>
         <AppForm
-          initialValues={{ email: "", password: "" }}
-          onSubmit={(values) => console.log(values)}
+          initialValues={{ email: "", password: "", names: "" }}
+          onSubmit={handleRegister}
+          validationSchema={validationSchema}
         >
           <AppFormField
-            name="name"
-            placeholder="Name"
+            name="names"
+            placeholder="Names"
             autoCapitalize="none"
             autoCorrect={false}
             keyboardType="default"

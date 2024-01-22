@@ -7,6 +7,10 @@ import AppFormField from "../components/forms/AppFormField";
 import AppSubmitButton from "../components/forms/AppSubmitButton";
 import colors from "../config/color";
 import * as Yup from "yup";
+import axios from "../config/axios";
+import { getData, storeData } from "../config/storage";
+import AppContext from "../config/context";
+import { useContext } from "react";
 
 const validationSchema = Yup.object().shape({
   email: Yup.string().required().email().label("Email"),
@@ -14,6 +18,21 @@ const validationSchema = Yup.object().shape({
 });
 
 const LoginScreen = ({ navigation }) => {
+  const { setUser } = useContext(AppContext);
+
+  const handleLogin = async (values) => {
+    try {
+      const response = await axios.post("user/login", values);
+      console.log(response.data.user);
+      storeData("user", response.data.user);
+      setUser(await getData("user"));
+      console.log(await getData("user"));
+    } catch (error) {
+      console.log(error.response.data);
+      alert(error.response.data.error);
+    }
+  };
+
   return (
     <Screen>
       <View
@@ -53,16 +72,13 @@ const LoginScreen = ({ navigation }) => {
         <AppForm
           initialValues={{ email: "", password: "" }}
           validationSchema={validationSchema}
-          onSubmit={(values) => {
-            console.log(values);
-            // navigation.navigate("Home");
-          }}
+          onSubmit={handleLogin}
         >
           <AppFormField
             name="email"
             placeholder="Email"
             autoCapitalize="none"
-            autoCorrect={false}
+            // autoCorrect={false}
             keyboardType="email-address"
             textContentType="emailAddress"
           />
@@ -70,15 +86,13 @@ const LoginScreen = ({ navigation }) => {
             name="password"
             placeholder="Password"
             autoCapitalize="none"
-            autoCorrect={false}
+            // autoCorrect={false}
             keyboardType="default"
             textContentType="password"
             secureTextEntry={true}
           />
-
           <AppSubmitButton title={"Login"} />
         </AppForm>
-
         <View
           style={{
             flexDirection: "row",

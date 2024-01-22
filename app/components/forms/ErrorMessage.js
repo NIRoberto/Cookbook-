@@ -5,7 +5,7 @@ const ErrorMessage = ({ error, visible }) => {
   if (!visible || !error) return null;
   return (
     <View style={styles.error}>
-      <AppText text={error} color={"red"} />
+      <AppText value={error} color={"red"} />
     </View>
   );
 };
