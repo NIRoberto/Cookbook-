@@ -1,4 +1,4 @@
-import { FlatList, Image, StyleSheet, Text, View } from "react-native";
+import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React, { useContext } from "react";
 import Screen from "../components/Screen";
 import { MaterialCommunityIcons as Mat } from "@expo/vector-icons";
@@ -6,6 +6,7 @@ import AppText from "../components/typo/AppText";
 import colors from "../config/color";
 import { recipes } from "./FavoriteScreen";
 import AppContext from "../config/context";
+import { removeData } from "../config/storage";
 
 /*
   this is how recipe object looks like
@@ -86,7 +87,7 @@ const HomeScreen = () => {
     "Drinks",
   ];
   const [activeCategory, setActiveCategory] = React.useState("Breakfast");
-  const { recipes } = useContext(AppContext);
+  const { recipes, setUser } = useContext(AppContext);
   return (
     <Screen>
       <View
@@ -97,8 +98,31 @@ const HomeScreen = () => {
           padding: 20,
         }}
       >
-        <View>
+        <View
+          style={{
+            justifyContent: "space-between",
+            flexDirection: "row",
+          }}
+        >
           <ProfileTop name="John Doe" />
+          <TouchableOpacity
+            onPress={() => {
+              removeData("user");
+              setUser(null);
+            }}
+          >
+            <View
+              style={{
+                backgroundColor: colors["fire-engine-red"],
+                padding: 10,
+                borderRadius: 10,
+                width: 100,
+                alignItems: "center",
+              }}
+            >
+              <AppText value={"Logout"} color={"white"} size={12} />
+            </View>
+          </TouchableOpacity>
         </View>
         <View>
           <AppText
