@@ -1,9 +1,61 @@
-import { FlatList, StyleSheet, Text, View } from "react-native";
+import { FlatList, Image, StyleSheet, Text, View } from "react-native";
 import React from "react";
 import Screen from "../components/Screen";
 import { MaterialCommunityIcons as Mat } from "@expo/vector-icons";
 import AppText from "../components/typo/AppText";
 import colors from "../config/color";
+import { recipes } from "./FavoriteScreen";
+
+/*
+  this is how recipe object looks like
+
+
+   {
+    id: '1',
+    title: 'Homemade Pizza',
+    category: 'Dinner',
+    ingredients: ['Dough', 'Tomato Sauce', 'Cheese', 'Toppings of your choice'],
+    instructions: '1. Roll out the dough. 2. Spread tomato sauce. 3. Add cheese and toppings. 4. Bake in the oven.',
+    image: 'https://example.com/pizza.jpg',
+    duration: 45,
+    difficulty: 'Intermediate',
+  },
+*/
+
+const RecipeItem = ({ item }) => {
+  return (
+    <View style={{ flex: 1, margin: 10 }}>
+      <View style={{ flex: 1 }}>
+        <Image
+          source={{
+            uri: "https://www.eatingwell.com/thmb/m5xUzIOmhWSoXZnY-oZcO9SdArQ=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/article_291139_the-top-10-healthiest-foods-for-kids_-02-4b745e57928c4786a61b47d8ba920058.jpg",
+          }}
+          style={{ width: "100%", height: 100, borderRadius: 10 }}
+        />
+      </View>
+      <View style={{ flex: 1, padding: 10 }}>
+        <AppText value={item.title} size={10} color="black" />
+        <AppText value={item.category} size={10} color="gray" />
+        <View
+          style={{
+            // alignItems: "center",
+            justifyContent: "space-between",
+            marginTop: 10,
+          }}
+        >
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Mat name="clock-outline" size={10} color="black" />
+            <AppText value={item.duration + " mins"} size={10} color="gray" />
+          </View>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Mat name="fire" size={20} color="black" />
+            <AppText value={item.difficulty} size={10} color="gray" />
+          </View>
+        </View>
+      </View>
+    </View>
+  );
+};
 
 const ProfileTop = ({ name }) => {
   return (
@@ -84,6 +136,21 @@ const HomeScreen = () => {
                 </View>
               );
             }}
+          />
+        </View>
+
+        <View>
+          <AppText
+            value="Popular recipes"
+            size={25}
+            color={colors["fire-engine-red"]}
+          />
+          <FlatList
+            data={recipes}
+         
+            keyExtractor={(recipe) => recipe.id}
+            numColumns={3}
+            renderItem={({ item }) => <RecipeItem item={item} />}
           />
         </View>
       </View>

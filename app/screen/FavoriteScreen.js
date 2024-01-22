@@ -11,9 +11,9 @@ import Screen from "../components/Screen";
 import AppText from "../components/typo/AppText";
 import colors from "../config/color";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
-
+import { MaterialCommunityIcons as Mat } from "@expo/vector-icons";
 // Recipe data with id
-const recipes = [
+export const recipes = [
   {
     id: "1",
     title: "Homemade Pizza",
@@ -146,14 +146,173 @@ const RecipeScreen = () => {
   );
 };
 
+const bookingData = [
+  {
+    id: "1",
+    recipe: {
+      id: "1",
+      title: "Homemade Pizza",
+      category: "Dinner",
+      ingredients: [
+        "Dough",
+        "Tomato Sauce",
+        "Cheese",
+        "Toppings of your choice",
+      ],
+      instructions:
+        "1. Roll out the dough. 2. Spread tomato sauce. 3. Add cheese and toppings. 4. Bake in the oven.",
+      image: "https://example.com/pizza.jpg",
+      duration: 45,
+      difficulty: "Intermediate",
+    },
+    scheduledTime: "2024-03-01T18:00:00", // Replace with a valid date/time format
+    notes: "Family dinner",
+  },
+  // Add more booking items as needed
+  {
+    id: "2",
+    recipe: {
+      id: "2",
+      title: "Avocado Toast",
+      category: "Breakfast",
+      ingredients: [
+        "2 slices of bread",
+        "1 ripe avocado",
+        "Salt",
+        "Pepper",
+        "Optional: poached egg",
+      ],
+      instructions:
+        "Toast bread. Mash avocado and spread it on the toast. Add salt and pepper. Optional: top with a poached egg.",
+      image: "https://example.com/avocado_toast.jpg",
+      duration: 15,
+      difficulty: "Easy",
+    },
+    scheduledTime: "2024-03-02T08:00:00",
+    notes: "Healthy breakfast",
+  },
+
+  {
+    id: "3",
+    recipe: {
+      id: "3",
+      title: "Avocado Toast",
+      category: "Breakfast",
+      ingredients: [
+        "2 slices of bread",
+        "1 ripe avocado",
+        "Salt",
+        "Pepper",
+        "Optional: poached egg",
+      ],
+      instructions:
+        "Toast bread. Mash avocado and spread it on the toast. Add salt and pepper. Optional: top with a poached egg.",
+      image: "https://example.com/avocado_toast.jpg",
+      duration: 15,
+      difficulty: "Easy",
+    },
+    scheduledTime: "2024-03-02T08:00:00",
+    notes: "Healthy breakfast",
+  },
+  // Add more booking items as needed
+  // ...
+];
+
+const BookingItem = ({ item }) => {
+  return (
+    <TouchableOpacity
+      onPress={() => {
+        console.log("Booked", item);
+      }}
+    >
+      <View style={{ flex: 1, marginVertical: 10, flexDirection: "row" }}>
+        <View style={{ flex: 1 }}>
+          <Image
+            source={{
+              uri: "https://www.eatingwell.com/thmb/m5xUzIOmhWSoXZnY-oZcO9SdArQ=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/article_291139_the-top-10-healthiest-foods-for-kids_-02-4b745e57928c4786a61b47d8ba920058.jpg",
+            }}
+            style={{ width: "100%", height: 100, borderRadius: 10 }}
+          />
+        </View>
+        <View style={{ flex: 1, padding: 10 }}>
+          <AppText value={item.recipe.title} size={10} color="black" />
+          <AppText value={item.recipe.category} size={10} color="gray" />
+          <View
+            style={{
+              // alignItems: "center",
+              justifyContent: "space-between",
+              marginTop: 10,
+            }}
+          >
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Mat name="clock-outline" size={10} color="black" />
+                <AppText
+                  value={item.recipe.duration + " mins"}
+                  size={10}
+                  color="gray"
+                />
+              </View>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Mat name="fire" size={20} color="black" />
+                <AppText
+                  value={item.recipe.difficulty}
+                  size={10}
+                  color="gray"
+                />
+              </View>
+            </View>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Mat name="calendar" size={20} color="black" />
+              <AppText
+                value={new Date(item.scheduledTime).toLocaleDateString(
+                  "en-US",
+                  {
+                    weekday: "short",
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  }
+                )}
+                size={10}
+                color="gray"
+              />
+            </View>
+          </View>
+        </View>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              backgroundColor: colors.ochre,
+              padding: 5,
+              borderRadius: 5,
+            }}
+          >
+            <AppText value={"Booked"} size={10} color="white" />
+          </View>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+};
+
 const BookScreen = () => {
   return (
-    <View>
+    <View style={{ padding: 10 }}>
       <AppText
         value={"Book"}
         color={colors["fire-engine-red"]}
         size={20}
         bold={true}
+      />
+
+      <FlatList
+        data={bookingData}
+        style={{ padding: 0 }}
+        keyExtractor={(booking) => booking.id}
+        renderItem={({ item }) => <BookingItem item={item} />}
       />
     </View>
   );
