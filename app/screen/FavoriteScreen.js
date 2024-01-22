@@ -6,12 +6,13 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import React from "react";
+import React, { useState } from "react";
 import Screen from "../components/Screen";
 import AppText from "../components/typo/AppText";
 import colors from "../config/color";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import { MaterialCommunityIcons as Mat } from "@expo/vector-icons";
+import { Swipeable } from "react-native-gesture-handler";
 // Recipe data with id
 export const recipes = [
   {
@@ -220,85 +221,101 @@ const bookingData = [
 
 const BookingItem = ({ item }) => {
   return (
-    <TouchableOpacity
-      onPress={() => {
-        console.log("Booked", item);
-      }}
-    >
-      <View style={{ flex: 1, marginVertical: 10, flexDirection: "row" }}>
-        <View style={{ flex: 1 }}>
-          <Image
-            source={{
-              uri: "https://www.eatingwell.com/thmb/m5xUzIOmhWSoXZnY-oZcO9SdArQ=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/article_291139_the-top-10-healthiest-foods-for-kids_-02-4b745e57928c4786a61b47d8ba920058.jpg",
-            }}
-            style={{ width: "100%", height: 100, borderRadius: 10 }}
-          />
-        </View>
-        <View style={{ flex: 1, padding: 10 }}>
-          <AppText value={item.recipe.title} size={10} color="black" />
-          <AppText value={item.recipe.category} size={10} color="gray" />
-          <View
-            style={{
-              // alignItems: "center",
-              justifyContent: "space-between",
-              marginTop: 10,
-            }}
-          >
+    <View style={{ flex: 1, marginVertical: 10, flexDirection: "row" }}>
+      <View style={{ flex: 1 }}>
+        <Image
+          source={{
+            uri: "https://www.eatingwell.com/thmb/m5xUzIOmhWSoXZnY-oZcO9SdArQ=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/article_291139_the-top-10-healthiest-foods-for-kids_-02-4b745e57928c4786a61b47d8ba920058.jpg",
+          }}
+          style={{ width: "100%", height: 100, borderRadius: 10 }}
+        />
+      </View>
+      <View style={{ flex: 1, padding: 10 }}>
+        <AppText value={item.recipe.title} size={10} color="black" />
+        <AppText value={item.recipe.category} size={10} color="gray" />
+        <View
+          style={{
+            // alignItems: "center",
+            justifyContent: "space-between",
+            marginTop: 10,
+          }}
+        >
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
             <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Mat name="clock-outline" size={10} color="black" />
-                <AppText
-                  value={item.recipe.duration + " mins"}
-                  size={10}
-                  color="gray"
-                />
-              </View>
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Mat name="fire" size={20} color="black" />
-                <AppText
-                  value={item.recipe.difficulty}
-                  size={10}
-                  color="gray"
-                />
-              </View>
-            </View>
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Mat name="calendar" size={20} color="black" />
+              <Mat name="clock-outline" size={10} color="black" />
               <AppText
-                value={new Date(item.scheduledTime).toLocaleDateString(
-                  "en-US",
-                  {
-                    weekday: "short",
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  }
-                )}
+                value={item.recipe.duration + " mins"}
                 size={10}
                 color="gray"
               />
             </View>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Mat name="fire" size={20} color="black" />
+              <AppText value={item.recipe.difficulty} size={10} color="gray" />
+            </View>
+          </View>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Mat name="calendar" size={20} color="black" />
+            <AppText
+              value={new Date(item.scheduledTime).toLocaleDateString("en-US", {
+                weekday: "short",
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })}
+              size={10}
+              color="gray"
+            />
           </View>
         </View>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
+      </View>
+      <View style={{ flexDirection: "row", alignItems: "center" }}>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            backgroundColor: colors.ochre,
+            padding: 5,
+            borderRadius: 5,
+          }}
+        >
+          <AppText value={"Booked"} size={10} color="white" />
+        </View>
+
+        <TouchableOpacity
+          onPress={() => {
+            console.log("Booked", item);
+          }}
+        >
           <View
             style={{
               flexDirection: "row",
               alignItems: "center",
-              backgroundColor: colors.ochre,
+              backgroundColor: colors["fire-engine-red"],
               padding: 5,
               borderRadius: 5,
+              marginLeft: 10,
             }}
           >
-            <AppText value={"Booked"} size={10} color="white" />
+            {/*  delete */}
+            <Mat
+              name="delete"
+              size={20}
+              color={"white"}
+              style={{ marginLeft: 0 }}
+            />
           </View>
-        </View>
+        </TouchableOpacity>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 };
 
 const BookScreen = () => {
+  const [refresh, setRefresh] = useState(false);
+
+  const [bookings, setBookings] = useState(bookingData);
+
   return (
     <View style={{ padding: 10 }}>
       <AppText
@@ -311,6 +328,13 @@ const BookScreen = () => {
       <FlatList
         data={bookingData}
         style={{ padding: 0 }}
+        refreshing={refresh}
+        onRefresh={() => {
+          setRefresh(true);
+          setTimeout(() => {
+            setRefresh(false);
+          }, 2000);
+        }}
         keyExtractor={(booking) => booking.id}
         renderItem={({ item }) => <BookingItem item={item} />}
       />
